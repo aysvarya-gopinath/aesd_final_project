@@ -11,7 +11,7 @@
 
 void get_system_metrics(char *buffer) {
     FILE *fp;
-    char cmd[256];
+   // char cmd[256];
     char temp[512];
 
     buffer[0] = '\0'; // clear buffer
