@@ -23,8 +23,8 @@ int main() {
     serv_addr.sin_family = AF_INET;
     serv_addr.sin_port = htons(PORT);
 
-    // Connect to localhost (127.0.0.1)
-    if (inet_pton(AF_INET, "127.0.0.1", &serv_addr.sin_addr) <= 0) {
+    // Connect to localhost (127.0.0.1) //rpi wifi 4--10.70.2.219   //ethernet--128.138.189.58
+    if (inet_pton(AF_INET, "128.138.189.58", &serv_addr.sin_addr) <= 0) {
         perror("Invalid address");
         return -1;
     }
