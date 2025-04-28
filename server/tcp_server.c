@@ -47,7 +47,7 @@ void get_system_metrics(char *buffer) {
 
     // Uptime
     strcat(buffer, "\nSystem Uptime:\n");
-    fp = popen("uptime -p", "r");
+    fp = popen("uptime", "r"); //uptime -p
     if (fp) {
         while (fgets(temp, sizeof(temp), fp)) {
             strcat(buffer, temp);
@@ -57,7 +57,7 @@ void get_system_metrics(char *buffer) {
 
     // Running processes
     strcat(buffer, "\nRunning Processes:\n");
-    fp = popen("ps -e --no-headers | wc -l", "r");
+    fp = popen("ps | wc -l", "r"); //ps -e --no-headers | wc -l", "r"
     if (fp) {
         while (fgets(temp, sizeof(temp), fp)) {
             strcat(buffer, temp);
@@ -77,7 +77,7 @@ void get_system_metrics(char *buffer) {
 
     // System Event Logs (dmesg)
    strcat(buffer, "\nSystem Event Logs:\n");
-    fp = popen("sudo dmesg | tail -n 5", "r");  // Fetch last 10 events
+    fp = popen("dmesg | tail -n 5", "r");  // Fetch last 10 events
     if (fp) {
         while (fgets(temp, sizeof(temp), fp)) {
             strcat(buffer, temp);
