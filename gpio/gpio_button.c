@@ -112,7 +112,7 @@ if (argc > 1 && strcmp(argv[1], "-d") == 0)
             printf("Button Pressed!\n");
             // Start TCP Server
             printf("Starting TCP server...\n");
-            system("./tcp_server &");
+            system("/usr/bin/tcp_server &"); //system("./tcp_server &");
         }
     }
 	
