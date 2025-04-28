@@ -6,13 +6,12 @@
 #include <netinet/in.h>
 #include <sys/socket.h>
 
-#define PORT 8080
+#define PORT 9000
 #define MAX_METRICS 2048
 
 void get_system_metrics(char *buffer) {
     FILE *fp;
-   // char cmd[256];
-    char temp[512];
+    char temp[1024];
 
     buffer[0] = '\0'; // clear buffer
 
@@ -77,14 +76,14 @@ void get_system_metrics(char *buffer) {
     }
 
     // System Event Logs (dmesg)
-  /* strcat(buffer, "\nSystem Event Logs:\n");
-    fp = popen("dmesg | tail -n 10", "r");  // Fetch last 10 events
+   strcat(buffer, "\nSystem Event Logs:\n");
+    fp = popen("sudo dmesg | tail -n 5", "r");  // Fetch last 10 events
     if (fp) {
         while (fgets(temp, sizeof(temp), fp)) {
             strcat(buffer, temp);
         }
         pclose(fp);
-    }*/
+    }
     
 }
 

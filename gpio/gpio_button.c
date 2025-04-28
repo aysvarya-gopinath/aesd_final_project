@@ -1,0 +1,127 @@
+//https://www.ics.com/blog/gpio-programming-exploring-libgpiod-library
+//https://github.com/starnight/libgpiod-example/blob/master/libgpiod-led/main.c
+//https://github.com/starnight/libgpiod-example/blob/master/libgpiod-event/main.c
+
+#include <gpiod.h>
+#include <stdio.h>
+#include <unistd.h>
+#include <stdlib.h>     // for exit()
+#include <string.h>     // for strcmp()
+#include <signal.h>     // for signal()
+#include <sys/stat.h>   // for umask()
+
+
+volatile sig_atomic_t handler_exit = 0;
+// Signal handler function
+void signal_handler(int signo)
+{
+    fprintf(stderr, "Caught signal %d, exiting\n", signo);
+    handler_exit = 1; // set the flag to exit and remove the file
+}
+
+// Function to run the application as daemon
+void daemonize()
+{
+    pid_t pid = fork(); // create a child process
+    if (pid < 0)
+    {
+        exit(EXIT_FAILURE); // fork failed
+    }
+    if (pid > 0)
+    {
+        exit(EXIT_SUCCESS); // Parent exits
+    }
+    if (setsid() < 0)
+    {
+        exit(EXIT_FAILURE); // creates a new session
+    }
+    freopen("/dev/null", "r", stdin); // redirects the standard input/output/error to null directory to discard
+    freopen("/dev/null", "w", stdout);
+    freopen("/dev/null", "w", stderr);
+    umask(0);   // file mode creation mask -default file permissions
+    chdir("/"); // change to root directory
+}
+
+
+
+int main(int argc, char **argv)
+{
+	char *chipname = "/dev/gpiochip0";
+	unsigned int line_num = 17;	// GPIO Pin #17
+	 struct gpiod_line_event event;
+	struct gpiod_chip *chip;
+	struct gpiod_line *line;
+	int ret;
+
+// set up the signal handler
+    signal(SIGINT, signal_handler);
+    signal(SIGTERM, signal_handler);
+
+if (argc > 1 && strcmp(argv[1], "-d") == 0)
+    {                // checking if -d arg is passed
+        daemonize(); // call daemon function
+    }
+    
+    
+// opens the desired GPIO chip
+	chip = gpiod_chip_open_by_name(chipname);
+	if (!chip) {
+		perror("Open chip failed\n");
+		ret=-1;
+		goto end;
+	}
+
+//opens the desired GPIO line
+	line = gpiod_chip_get_line(chip, line_num);
+	if (!line) {
+		perror("Get line failed\n");
+		goto close_chip;
+	}
+
+// request line as input with event detection 
+    ret = gpiod_line_request_rising_edge_events(line, "gpio_button");
+    if (ret < 0) {
+        perror("Request line as event input failed");
+        goto release_line;
+    }
+
+    printf("Waiting for button press...\n");
+
+    while (!handler_exit) {
+        ret = gpiod_line_event_wait(line, NULL);
+        if (ret < 0) {
+            perror("Event wait failed");
+            ret = -1;
+	goto release_line;
+        } 
+        else if (ret == 0) {
+            // infinite wait
+              continue;
+        }
+
+        // Read event
+        ret = gpiod_line_event_read(line, &event);
+        if (ret < 0) {
+            perror("Read event failed");
+            ret = -1;
+	goto release_line;
+            
+        }
+
+        if (event.event_type == GPIOD_LINE_EVENT_RISING_EDGE) {
+            printf("Button Pressed!\n");
+            // Start TCP Server
+            printf("Starting TCP server...\n");
+            system("./tcp_server &");
+        }
+    }
+	
+	
+release_line:
+	gpiod_line_release(line);
+close_chip:
+	gpiod_chip_close(chip);
+end:
+	return ret;
+}
+
