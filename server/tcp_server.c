@@ -1,33 +1,42 @@
 // tcp_server.c
+//https://opensource.com/article/22/4/parsing-data-strtok-c
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 #include <netinet/in.h>
 #include <sys/socket.h>
+#include <string.h>
+
 
 #define PORT 9000
-#define MAX_METRICS 2048
+#define MAX_METRICS 4048
 
 void get_system_metrics(char *buffer) {
     FILE *fp;
-    char temp[1024];
+    char temp[4096];
+    char *token;
 
     buffer[0] = '\0'; // clear buffer
 
     // CPU usage
     strcat(buffer, "CPU Usage:\n");
-    fp = popen("top -bn1 | grep 'Cpu(s)'", "r");
-    if (fp) {
-        while (fgets(temp, sizeof(temp), fp)) {
+fp = popen("top -bn1", "r");
+if (fp) {
+    while (fgets(temp, sizeof(temp), fp)) {
+        if (strstr(temp, "Tasks:") ||
+            strstr(temp, "%Cpu(s):")) {
             strcat(buffer, temp);
         }
-        pclose(fp);
     }
+    pclose(fp);
+}
+
 
     // Memory usage
     strcat(buffer, "\nMemory Usage:\n");
-    fp = popen("free -m", "r");
+    fp = popen("free -h", "r");
     if (fp) {
         while (fgets(temp, sizeof(temp), fp)) {
             strcat(buffer, temp);
@@ -45,35 +54,108 @@ void get_system_metrics(char *buffer) {
         pclose(fp);
     }
 
+
     // Uptime
-    strcat(buffer, "\nSystem Uptime:\n");
+    strcat(buffer, "\nSystem timings:\n");
     fp = popen("uptime", "r"); //uptime -p
     if (fp) {
         while (fgets(temp, sizeof(temp), fp)) {
-            strcat(buffer, temp);
+        strcat(buffer, temp); //entire output
+        token = strtok(temp, " ");
+        if (token != NULL) {
+            strcat(buffer, "Current time: ");
+            strcat(buffer, token);  
+            strcat(buffer, "\n");
         }
-        pclose(fp);
+        token = strtok(NULL, " "); //ignore second token
+        token = strtok(NULL, ",");
+            if (token != NULL) {
+            strcat(buffer, "Uptime: ");
+            strcat(buffer, token);  
+            strcat(buffer, "\t");
+        }
+        token = strtok(NULL, ":");
+        if (token != NULL) {
+            strcat(buffer, token);  
+             strcat(buffer, "hours\b");
+        }
+        token = strtok(NULL, ",");
+          if (token != NULL) {
+            strcat(buffer, token);  
+             strcat(buffer, "minutes");
+             strcat(buffer, "\n");
+        }
+        token = strtok(NULL, ",");
+        if (token != NULL) {
+            strcat(buffer, "Number of Users: ");
+            strcat(buffer, token);  
+            strcat(buffer, "\n");
+        }
+        
+        token = strtok(NULL, ":"); //ignore 
+          token = strtok(NULL, "\0");
+        if (token != NULL) {
+        char *newline = strchr(token, '\n');
+    if (newline) 
+    	*newline = '\0'; // Replace \n with \0
+            strcat(buffer, "Average load:\t");
+            strcat(buffer, token);  
+            strcat(buffer, " for 1min, 5min and 15min respectively\n");   
+        } 
+        }
+            pclose(fp);
     }
 
     // Running processes
     strcat(buffer, "\nRunning Processes:\n");
-    fp = popen("ps | wc -l", "r"); //ps -e --no-headers | wc -l", "r"
+    fp = popen("ps -e| wc -l", "r");
     if (fp) {
         while (fgets(temp, sizeof(temp), fp)) {
-            strcat(buffer, temp);
+            int num = atoi(temp); //convert string to numeric
+        num -= 1; // Subtract 1 for the header line
+         char count[10];
+        sprintf(count, "%d\n", num);
+        strcat(buffer,count);
         }
         pclose(fp);
     }
-    
-     // Network Activity
-    strcat(buffer, "\nNetwork Activity:\n");
-    fp = popen("netstat -i", "r");
-    if (fp) {
-        while (fgets(temp, sizeof(temp), fp)) {
-            strcat(buffer, temp);
+
+// Network Activity
+strcat(buffer, "\nNetwork Activity:\n");
+fp = popen("netstat -i", "r");
+if (fp) {
+    int line_number = 0;
+    while (fgets(temp, sizeof(temp), fp)) {
+        if (line_number == 0) {
+            // Skip header
+            line_number++;
+            continue;
         }
-        pclose(fp);
+        char iface[20];
+        int mtu;
+        unsigned long rx_ok, rx_err, rx_drp, rx_ovr;
+        unsigned long tx_ok, tx_err, tx_drp, tx_ovr;
+        
+        // Parse fields based on netstat -i output
+        sscanf(temp, "%s %d %lu %lu %lu %lu %lu %lu %lu %lu", 
+            iface, &mtu, &rx_ok, &rx_err, &rx_drp, &rx_ovr, &tx_ok, &tx_err, &tx_drp, &tx_ovr);
+
+        strcat(buffer, "Interface: ");
+        strcat(buffer, iface);
+        strcat(buffer, "\n");
+
+        char temp_buf[512];
+        snprintf(temp_buf, sizeof(temp_buf),
+                 "RX Packets: %lu, RX Errors: %lu\n"
+                 "TX Packets: %lu, TX Errors: %lu\n\n",
+                 rx_ok, rx_err, tx_ok, tx_err);
+        strcat(buffer, temp_buf);
+
+        line_number++;
     }
+    pclose(fp);
+}
+
 
     // System Event Logs (dmesg)
    strcat(buffer, "\nSystem Event Logs:\n");
