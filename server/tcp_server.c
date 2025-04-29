@@ -185,7 +185,7 @@ if (fp) {
 
     // System Event Logs (dmesg)
    strcat(buffer, "\nSystem Event Logs:\n");
-    fp = popen("sudo dmesg | tail -n 5", "r");  // Fetch last 10 events
+    fp = popen(" dmesg | tail -n 5", "r");  // Fetch last 10 events
     if (fp) {
         while (fgets(temp, sizeof(temp), fp)) {
             strcat(buffer, temp);
