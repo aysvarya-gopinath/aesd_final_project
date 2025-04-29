@@ -7,7 +7,7 @@ LIBS    += -lgpiod
 all:	$(TARGET)
 
 $(TARGET):gpio_button.c
-	$(CC) $(CFLAGS) $^ -o $@ $(LDFLAGS) $(LIBS)
+	$(CC) $(CFLAGS) $(LDFLAGS) $^ -o $@  $(LIBS)
 	
 clean:
 	rm -f $(TARGET) 

@@ -46,8 +46,9 @@ void daemonize()
 
 int main(int argc, char **argv)
 {
-	char *chipname = "/dev/gpiochip0";
-	unsigned int line_num = 17;	// GPIO Pin #17
+	const char *chipname = "/dev/gpiochip0";
+	const char *consumer = "gpio_button";
+	unsigned int line_num = 22;	// GPIO Pin #17
 	 struct gpiod_line_event event;
 	struct gpiod_chip *chip;
 	struct gpiod_line *line;
@@ -63,7 +64,7 @@ if (argc > 1 && strcmp(argv[1], "-d") == 0)
     }
     
 // opens the desired GPIO chip
-	chip = gpiod_chip_open(chipname);
+	chip = gpiod_chip_open(chipname); //chip open by path
 	if (!chip) {
 		perror("Open chip failed\n");
 		ret=-1;
@@ -78,11 +79,12 @@ if (argc > 1 && strcmp(argv[1], "-d") == 0)
 	}
 
 // request line as input with event detection 
-    ret = gpiod_line_request_rising_edge_events(line, "gpio_button");
+    ret = gpiod_line_request_both_edges_events(line,consumer);
     if (ret < 0) {
         perror("Request line as event input failed");
         goto release_line;
     }
+    
 
     printf("Waiting for button press...\n");
 

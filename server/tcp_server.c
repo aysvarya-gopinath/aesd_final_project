@@ -22,21 +22,46 @@ void get_system_metrics(char *buffer) {
 
     // CPU usage
     strcat(buffer, "CPU Usage:\n");
-fp = popen("top -bn1 | grep Cpu ", "r");
+          
+fp = fopen("/proc/stat", "r");  // open /proc/stat
 if (fp) {
-    while (fgets(temp, sizeof(temp), fp)) {
-            strcat(buffer, temp);
+    if (fgets(temp, sizeof(temp), fp)) {
+        if (strncmp(temp, "cpu ", 4) == 0) { // only match "cpu " line
+        strcat(buffer, temp);
+            unsigned long long user, nice, system, idle, iowait, irq, softirq, steal, guest, guest_nice;
+            sscanf(temp, "cpu %llu %llu %llu %llu %llu %llu %llu %llu %llu %llu",
+                   &user, &nice, &system, &idle, &iowait, &irq, &softirq, &steal, &guest, &guest_nice);
+
+            // Print each field separately
+            char cpu_info[512];
+            snprintf(cpu_info, sizeof(cpu_info),
+                     "  User time:     %llu\n"
+                     "  Nice time:     %llu\n"
+                     "  System time:   %llu\n"
+                     "  Idle time:     %llu\n"
+                     "  IOwait time:   %llu\n"
+                     "  IRQ time:      %llu\n"
+                     "  SoftIRQ time:  %llu\n"
+                     "  Steal time:    %llu\n"
+                     "  Guest time:    %llu\n"
+                     "  Guest Nice:    %llu\n",
+                     user, nice, system, idle, iowait, irq, softirq, steal, guest, guest_nice);
+
+            strcat(buffer, cpu_info);
+
+            // Now calculate CPU usage
+            unsigned long long idle_time = idle + iowait;
+            unsigned long long non_idle = user + nice + system + irq + softirq + steal;
+            unsigned long long total = idle_time + non_idle;
+
+            float cpu_usage = (float)(total - idle_time) / total * 100.0;
+
+            snprintf(cpu_info, sizeof(cpu_info), "CPU Usage percent: %.2f%%\n", cpu_usage);
+            strcat(buffer, cpu_info); 
+          }     
         }
-         pclose(fp);
-    }
-   
-fp = popen("top -bn1 | grep Task ", "r");
-if (fp) {
-    while (fgets(temp, sizeof(temp), fp)) {
-            strcat(buffer, temp);
-        }
-        pclose(fp); 
-    }    
+         fclose(fp);
+    }   
      
 
     // Memory usage
@@ -160,7 +185,7 @@ if (fp) {
 
     // System Event Logs (dmesg)
    strcat(buffer, "\nSystem Event Logs:\n");
-    fp = popen("dmesg | tail -n 5", "r");  // Fetch last 10 events
+    fp = popen("sudo dmesg | tail -n 5", "r");  // Fetch last 10 events
     if (fp) {
         while (fgets(temp, sizeof(temp), fp)) {
             strcat(buffer, temp);
