@@ -62,9 +62,8 @@ if (argc > 1 && strcmp(argv[1], "-d") == 0)
         daemonize(); // call daemon function
     }
     
-    
 // opens the desired GPIO chip
-	chip = gpiod_chip_open_by_name(chipname);
+	chip = gpiod_chip_open(chipname);
 	if (!chip) {
 		perror("Open chip failed\n");
 		ret=-1;

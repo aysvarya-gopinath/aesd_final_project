@@ -22,17 +22,22 @@ void get_system_metrics(char *buffer) {
 
     // CPU usage
     strcat(buffer, "CPU Usage:\n");
-fp = popen("top -bn1", "r");
+fp = popen("top -bn1 | grep Cpu ", "r");
 if (fp) {
     while (fgets(temp, sizeof(temp), fp)) {
-        if (strstr(temp, "Tasks:") ||
-            strstr(temp, "%Cpu(s):")) {
             strcat(buffer, temp);
         }
+         pclose(fp);
     }
-    pclose(fp);
-}
-
+   
+fp = popen("top -bn1 | grep Task ", "r");
+if (fp) {
+    while (fgets(temp, sizeof(temp), fp)) {
+            strcat(buffer, temp);
+        }
+        pclose(fp); 
+    }    
+     
 
     // Memory usage
     strcat(buffer, "\nMemory Usage:\n");
@@ -67,15 +72,11 @@ if (fp) {
             strcat(buffer, token);  
             strcat(buffer, "\n");
         }
-        token = strtok(NULL, " "); //ignore second token
-        token = strtok(NULL, ",");
-            if (token != NULL) {
-            strcat(buffer, "Uptime: ");
-            strcat(buffer, token);  
-            strcat(buffer, "\t");
-        }
+        token = strtok(NULL, " "); //ignore second token        
+        
         token = strtok(NULL, ":");
         if (token != NULL) {
+        strcat(buffer, "Uptime: ");   
             strcat(buffer, token);  
              strcat(buffer, "hours\b");
         }
