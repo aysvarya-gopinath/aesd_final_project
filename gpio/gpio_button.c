@@ -48,7 +48,7 @@ int main(int argc, char **argv)
 {
 	const char *chipname = "/dev/gpiochip0";
 	const char *consumer = "gpio_button";
-	unsigned int button_line_num = 4;	// header pin #7
+	unsigned int button_line_num = 22;	// header pin #15
 	unsigned int led_press_num = 17;  //header 11
 	unsigned int led_test_num = 27;    //header 13
 	
@@ -130,9 +130,12 @@ if (argc > 1 && strcmp(argv[1], "-d") == 0)
 
         if (event.event_type == GPIOD_LINE_EVENT_RISING_EDGE) {
         printf("Button Pressed!\n");
-        gpiod_line_set_value(led_press_line , 1);
-        sleep(1); // sleep
-        gpiod_line_set_value(led_press_line , 0);
+         for (int i = 0; i < 3; i++) {
+        gpiod_line_set_value(led_press_line, 1);
+        sleep(1);
+        gpiod_line_set_value(led_press_line, 0);
+        sleep(1);
+    }
             // Start TCP Server
             printf("Starting TCP server...\n");
             
@@ -145,9 +148,10 @@ if (argc > 1 && strcmp(argv[1], "-d") == 0)
 
          gpiod_line_set_value(led_press_line, 1);
         gpiod_line_set_value(led_test_line, 0);
-        sleep(1);
-                         
+        sleep(1);            
             }        //pattern to indicate the server test is done
+   gpiod_line_set_value(led_press_line, 0);
+    gpiod_line_set_value(led_test_line, 0);
         }
     }
 	
