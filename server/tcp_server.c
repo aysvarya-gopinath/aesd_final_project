@@ -221,7 +221,7 @@ void get_system_metrics(int client_fd)
     // System Event Logs (dmesg)
     buffer[0] = '\0';  //clear buffer
     strcat(buffer, "\nSystem Event Logs:\n");
-    fp = popen(" sudo dmesg | tail -n 5", "r"); // Fetch last 10 events
+    fp = popen("dmesg | tail -n 5", "r"); // Fetch last 10 events
     if (fp)
     {
         while (fgets(temp, sizeof(temp), fp)!= NULL)
