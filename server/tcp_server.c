@@ -5,6 +5,7 @@
 //https://www.geeksforgeeks.org/socket-programming-cc/
 //https://beej.us/guide/bgnet/html/
 //https://opensource.com/article/22/4/parsing-data-strtok-c
+//https://support.site24x7.com/portal/en/kb/articles/how-is-cpu-utilization-calculated-for-a-linux-server-monitor
 */
 #include <stdio.h>
 #include <stdlib.h>
@@ -30,7 +31,7 @@ void get_system_metrics(int client_fd)
     // CPU usage
     strcat(buffer, "CPU Usage:\n");
    
-    fp = fopen("/proc/stat", "r"); // open /proc/stat
+    fp = fopen("/proc/stat", "r"); // amount of time CPU spent in tasks
     if (fp)
     {
         if (fgets(temp, sizeof(temp), fp)) //read a line from the file
@@ -78,7 +79,7 @@ void get_system_metrics(int client_fd)
     // Memory usage
     buffer[0] = '\0';  //clear buffer
     strcat(buffer, "\nMemory Usage:\n");
-    fp = popen("free -h", "r");
+    fp = popen("free -h", "r"); //opens a pipe to a process and read the process
     if (fp)
     {
         while (fgets(temp, sizeof(temp), fp)!= NULL)
@@ -112,7 +113,7 @@ void get_system_metrics(int client_fd)
         while (fgets(temp, sizeof(temp), fp)!= NULL)
         {
             strcat(buffer, temp); // entire output
-            token = strtok(temp, " ");
+            token = strtok(temp, " "); //parse string
             if (token != NULL)
             {
                 strcat(buffer, "Current time: ");
@@ -149,7 +150,7 @@ void get_system_metrics(int client_fd)
             {
                 char *newline = strchr(token, '\n');
                 if (newline)
-                    *newline = '\0'; // Replace \n with \0
+                    *newline = '\0'; // replace \n with \0 to print on the same line
                 strcat(buffer, "Average load:\t");
                 strcat(buffer, token);
                 strcat(buffer, " for 1min, 5min and 15min respectively\n");
@@ -168,7 +169,7 @@ void get_system_metrics(int client_fd)
         while (fgets(temp, sizeof(temp), fp)!= NULL)
         {
             int num = atoi(temp); // convert string to numeric
-            num -= 1;             // Subtract 1 for the header line
+            num -= 1;             // subtract 1 for the header line
             char count[10];
             sprintf(count, "%d\n", num);
             strcat(buffer, count);
@@ -206,7 +207,7 @@ void get_system_metrics(int client_fd)
             strcat(buffer, "\n");
 
             char temp_buf[512];
-            snprintf(temp_buf, sizeof(temp_buf),
+            snprintf(temp_buf, sizeof(temp_buf),   //store formatted string in buffer
                      "RX Packets: %lu, RX Errors: %lu\n"
                      "TX Packets: %lu, TX Errors: %lu\n\n",
                      rx_ok, rx_err, tx_ok, tx_err);

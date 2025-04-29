@@ -77,7 +77,7 @@ if (argc > 1 && strcmp(argv[1], "-d") == 0)
 	}
 
 //opens the  GPIO line 
-	button_line = gpiod_chip_get_line(chip, button_line_num);  //for button press
+	button_line = gpiod_chip_get_line(chip, button_line_num);  //get line objects for button press
 	if (!button_line) {
 		perror("Get line failed for button press\n");
 		goto close_chip;
@@ -108,7 +108,7 @@ if (argc > 1 && strcmp(argv[1], "-d") == 0)
     printf("Waiting for button press...\n");
 
     while (!handler_exit) {
-        ret = gpiod_line_event_wait(button_line, NULL);
+        ret = gpiod_line_event_wait(button_line, NULL); //waits for rising edge indefinitely
         if (ret < 0) {
             perror("Event wait failed");
             ret = -1;
@@ -119,8 +119,7 @@ if (argc > 1 && strcmp(argv[1], "-d") == 0)
               continue;
         }
 
-        // Read event
-        ret = gpiod_line_event_read(button_line, &event);
+        ret = gpiod_line_event_read(button_line, &event);       // read event
         if (ret < 0) {
             perror("Read event failed");
             ret = -1;
