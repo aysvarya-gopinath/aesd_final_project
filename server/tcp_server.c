@@ -1,6 +1,11 @@
 // tcp_server.c
+/*FILE-This file contains the tcp server implementation to run the system analysis and send to client
+*AUTHOR-Aysvarya Gopinath
+*REFERENCES-https://github.com/cu-ecen-aeld/assignments-3-and-later-aysvarya-gopinath/blob/main/server/aesdsocket.c
+//https://www.geeksforgeeks.org/socket-programming-cc/
+//https://beej.us/guide/bgnet/html/
 //https://opensource.com/article/22/4/parsing-data-strtok-c
-
+*/
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

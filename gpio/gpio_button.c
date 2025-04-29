@@ -140,15 +140,15 @@ if (argc > 1 && strcmp(argv[1], "-d") == 0)
             printf("Starting TCP server...\n");
             
             system("/usr/bin/tcp_server &");
-            for (int i=0;i<5;i++)
+            for (int i=0;i<3;i++)
             {
             gpiod_line_set_value(led_test_line, 1);
           gpiod_line_set_value(led_press_line, 0);
-          usleep(500000);//500ms
+          usleep(50000);//50ms
 
          gpiod_line_set_value(led_press_line, 1);
         gpiod_line_set_value(led_test_line, 0);
-        usleep(500000);//500ms            
+        usleep(50000);//50ms            
             }        //pattern to indicate the server test is done
    gpiod_line_set_value(led_press_line, 0);
     gpiod_line_set_value(led_test_line, 0);
