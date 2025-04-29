@@ -6,7 +6,7 @@
 #include <arpa/inet.h>
 
 #define PORT 9000
-#define BUFFER_SIZE 4096
+#define BUFFER_SIZE 1024
 
 int main() {
     int sock = 0;
@@ -24,7 +24,7 @@ int main() {
     serv_addr.sin_port = htons(PORT);
 
     // Connect to localhost (127.0.0.1) //rpi wifi 4--10.70.2.219   //ethernet--128.138.189.226
-    if (inet_pton(AF_INET, "128.138.189.226", &serv_addr.sin_addr) <= 0) {
+    if (inet_pton(AF_INET, "127.0.0.1", &serv_addr.sin_addr) <= 0) {
         perror("Invalid address");
         return -1;
     }
@@ -45,4 +45,30 @@ int main() {
     close(sock);
     return 0;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 

@@ -132,9 +132,9 @@ if (argc > 1 && strcmp(argv[1], "-d") == 0)
         printf("Button Pressed!\n");
          for (int i = 0; i < 3; i++) {
         gpiod_line_set_value(led_press_line, 1);
-        usleep(500000);//500ms
+        usleep(200000);//200ms
         gpiod_line_set_value(led_press_line, 0);
-        usleep(500000);//500ms
+        usleep(200000);//200ms
     }
             // Start TCP Server
             printf("Starting TCP server...\n");
